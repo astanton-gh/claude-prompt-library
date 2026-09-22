@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team prompt library</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #fafaf9;
+  --surface-1: #f3f3f1;
+  --surface-2: #ffffff;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --border: rgba(11,11,11,0.10);
+  --border-strong: rgba(11,11,11,0.18);
+  --border-accent: #2a78d6;
+  --bg-accent: #E6F1FB;
+  --text-accent: #185FA5;
+  --text-danger: #A32D2D;
+  --radius: 8px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.03);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --surface-1: #1a1a19;
+    --surface-2: #222221;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --border: rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --border-accent: #3987e5;
+    --bg-accent: #0C447C;
+    --text-accent: #85B7EB;
+    --text-danger: #F09595;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.15);
+    --shadow-md: 0 2px 6px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.2);
+  }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg); color: var(--text-primary); line-height: 1.5; min-height: 100vh; }
+.container { max-width: 740px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.lib-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.lib-header h1 { font-size: 22px; font-weight: 500; }
+.lib-header .count { font-size: 14px; color: var(--text-secondary); margin-left: auto; }
+.lib-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.stat-card { background: var(--surface-1); border-radius: var(--radius); padding: 1rem; }
+.stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+.stat-value { font-size: 24px; font-weight: 500; }
+
+.submit-section { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 28px; box-shadow: var(--shadow-sm); }
+.submit-section h2 { font-size: 16px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+.form-row input, .form-row textarea, .form-row select {
+  width: 100%; font-family: var(--font-sans); font-size: 14px;
+  padding: 8px 12px; border-radius: var(--radius);
+  border: 0.5px solid var(--border); background: var(--surface-1);
+  color: var(--text-primary); outline: none; transition: border-color 0.15s;
+}
+.form-row input:focus, .form-row textarea:focus { border-color: var(--border-accent); box-shadow: 0 0 0 2px var(--bg-accent); }
+.form-row input::placeholder, .form-row textarea::placeholder { color: var(--text-muted); }
+.form-row textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
+.form-split { display: flex; gap: 12px; }
+.form-split > div { flex: 1; }
+.form-actions { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
+
+button {
+  font-family: var(--font-sans); font-size: 14px; padding: 8px 16px;
+  border-radius: var(--radius); border: 0.5px solid var(--border-strong);
+  background: transparent; color: var(--text-primary); cursor: pointer;
+  transition: all 0.12s;
+}
+button:hover { background: var(--surface-1); }
+button:active { transform: scale(0.98); }
+.btn-primary { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
+.btn-primary:hover { opacity: 0.88; background: var(--text-primary); }
+.btn-ghost { border: none; color: var(--text-muted); }
+.btn-ghost:hover { color: var(--text-primary); }
+
+.auto-tag-row { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.auto-tag-hint { font-size: 13px; color: var(--text-muted); }
+
+.filter-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.filter-bar input {
+  flex: 1; min-width: 200px; font-family: var(--font-sans); font-size: 14px;
+  padding: 8px 12px; border-radius: var(--radius);
+  border: 0.5px solid var(--border); background: var(--surface-1);
+  color: var(--text-primary); outline: none;
+}
+.filter-bar input:focus { border-color: var(--border-accent); box-shadow: 0 0 0 2px var(--bg-accent); }
+.filter-bar input::placeholder { color: var(--text-muted); }
+.filter-bar select {
+  font-family: var(--font-sans); font-size: 13px; padding: 8px 12px;
+  border-radius: var(--radius); border: 0.5px solid var(--border);
+  background: var(--surface-1); color: var(--text-secondary); outline: none; cursor: pointer;
+}
+
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+.chip {
+  font-size: 12px; padding: 5px 14px; border-radius: 20px;
+  border: 0.5px solid var(--border); background: transparent;
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.chip:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.chip.active { background: var(--bg-accent); color: var(--text-accent); border-color: var(--border-accent); }
+
+.prompt-grid { display: grid; gap: 12px; }
+.prompt-card {
+  background: var(--surface-2); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 1.25rem; transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.prompt-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.card-title { font-size: 15px; font-weight: 500; }
+.card-cat {
+  font-size: 11px; padding: 3px 10px; border-radius: 20px;
+  font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
+}
+.card-prompt {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.7;
+  background: var(--surface-1); border-radius: var(--radius);
+  padding: 12px 14px; margin-bottom: 10px;
+  font-family: var(--font-mono); white-space: pre-wrap; word-break: break-word;
+  max-height: 120px; overflow: hidden; position: relative;
+}
+.card-prompt.expanded { max-height: none; }
+.card-prompt .fade {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 36px;
+  background: linear-gradient(transparent, var(--surface-1)); pointer-events: none;
+}
+.card-prompt.expanded .fade { display: none; }
+.card-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: var(--radius); background: var(--surface-1); color: var(--text-secondary); }
+.card-actions { margin-left: auto; display: flex; gap: 2px; }
+.card-actions button {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 16px; padding: 4px 6px;
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+}
+.card-actions button:hover { color: var(--text-primary); background: var(--surface-1); }
+
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+.form-error { font-size: 13px; color: var(--text-danger); margin-top: 4px; display: none; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--surface-2); border: 0.5px solid var(--border-accent);
+  color: var(--text-accent); padding: 10px 24px; border-radius: var(--radius);
+  font-size: 13px; display: none; z-index: 10; box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+}
+.toast.show { display: flex; align-items: center; gap: 8px; animation: fadeInUp 0.3s; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+.cat-code { background: #E6F1FB; color: #0C447C; }
+.cat-writing { background: #EEEDFE; color: #3C3489; }
+.cat-analysis { background: #E1F5EE; color: #085041; }
+.cat-debug { background: #FCEBEB; color: #791F1F; }
+.cat-creative { background: #FBEAF0; color: #72243E; }
+.cat-planning { background: #FAEEDA; color: #633806; }
+.cat-data { background: #EAF3DE; color: #27500A; }
+.cat-other { background: #F1EFE8; color: #444441; }
+@media (prefers-color-scheme: dark) {
+  .cat-code { background: #0C447C; color: #B5D4F4; }
+  .cat-writing { background: #3C3489; color: #CECBF6; }
+  .cat-analysis { background: #085041; color: #9FE1CB; }
+  .cat-debug { background: #791F1F; color: #F7C1C1; }
+  .cat-creative { background: #72243E; color: #F4C0D1; }
+  .cat-planning { background: #633806; color: #FAC775; }
+  .cat-data { background: #27500A; color: #C0DD97; }
+  .cat-other { background: #444441; color: #D3D1C7; }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 1rem; }
+  .form-split { flex-direction: column; gap: 14px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .filter-bar { flex-direction: column; }
+  .filter-bar input { min-width: unset; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="lib-header">
+    <i class="ti ti-book" style="font-size: 24px; color: var(--text-accent);" aria-hidden="true"></i>
+    <h1>Team prompt library</h1>
+    <span class="count" id="totalCount"></span>
+  </div>
+  <p class="lib-subtitle">Collect and share useful Claude prompts across the team. Prompts are auto-categorized when you add them.</p>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="submit-section">
+    <h2><i class="ti ti-plus" style="font-size: 18px;" aria-hidden="true"></i> Add a prompt</h2>
+    <div class="form-row">
+      <label for="promptTitle">Title</label>
+      <input type="text" id="promptTitle" placeholder="Summarize meeting notes" />
+    </div>
+    <div class="form-row">
+      <label for="promptText">Prompt</label>
+      <textarea id="promptText" placeholder="Paste your Claude prompt here..."></textarea>
+    </div>
+    <div class="form-split">
+      <div class="form-row">
+        <label for="promptAuthor">Added by</label>
+        <input type="text" id="promptAuthor" placeholder="Your name" />
+      </div>
+      <div class="form-row">
+        <label for="promptTags">Tags (comma-separated)</label>
+        <input type="text" id="promptTags" placeholder="meeting, summary, notes" />
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Auto-detected category</label>
+      <div class="auto-tag-row">
+        <span id="autoCategory" class="card-cat" style="display: none;"></span>
+        <span id="autoCatHint" class="auto-tag-hint">Start typing a prompt to auto-detect</span>
+      </div>
+    </div>
+    <div id="formError" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn-primary" id="submitBtn"><i class="ti ti-plus" style="font-size: 16px; vertical-align: -2px; margin-right: 4px;" aria-hidden="true"></i>Add to library</button>
+      <button class="btn-ghost" id="clearBtn">Clear</button>
+      <button class="btn-ghost" id="exportBtn" style="margin-left: auto;" title="Export as JSON"><i class="ti ti-download" style="font-size: 16px; vertical-align: -2px; margin-right: 4px;" aria-hidden="true"></i>Export</button>
+      <label class="btn-ghost" style="cursor: pointer; padding: 8px 16px; font-size: 14px; display: inline-flex; align-items: center;" title="Import JSON">
+        <i class="ti ti-upload" style="font-size: 16px; vertical-align: -2px; margin-right: 4px;" aria-hidden="true"></i>Import
+        <input type="file" id="importFile" accept=".json" style="display: none;" />
+      </label>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Search prompts..." />
+    <select id="sortSelect">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="alpha">A to Z</option>
+    </select>
+  </div>
+
+  <div class="filter-chips" id="filterChips"></div>
+  <div class="prompt-grid" id="promptGrid"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATEGORIES = {
+  code: { label: 'Code', icon: 'ti-code', cls: 'cat-code',
+    keywords: ['code','function','api','debug','refactor','implement','build','deploy','test','unit test','integration','endpoint','class','method','module','import','export','typescript','javascript','python','react','sql','query','database','schema','migration','regex','algorithm','loop','array','object','variable','component','hook','route','middleware','sdk','cli','compile','lint','format','type','interface','enum','struct','git','commit','merge','branch','pull request','ci','cd','pipeline','docker','kubernetes','aws','terraform','server','client','backend','frontend','rest','graphql','websocket','authentication','authorization','jwt','oauth','css','html','dom','node','package','dependency','npm','yarn','webpack','vite'] },
+  writing: { label: 'Writing', icon: 'ti-pencil', cls: 'cat-writing',
+    keywords: ['write','draft','email','blog','article','copy','tone','rewrite','edit','proofread','grammar','summary','summarize','memo','letter','message','newsletter','announcement','documentation','readme','proposal','report','essay','paragraph','sentence','outline','brief','comms','communication','stakeholder update','slack message','presentation'] },
+  analysis: { label: 'Analysis', icon: 'ti-chart-bar', cls: 'cat-analysis',
+    keywords: ['analyze','analysis','compare','evaluate','assess','review','audit','insight','trend','pattern','metric','kpi','benchmark','research','investigate','pros and cons','tradeoff','trade-off','impact','risk','opportunity','swot','framework','breakdown','deep dive'] },
+  debug: { label: 'Debugging', icon: 'ti-bug', cls: 'cat-debug',
+    keywords: ['debug','error','bug','fix','issue','problem','broken','crash','fail','exception','stack trace','log','troubleshoot','diagnose','root cause','regression','not working','undefined','null','timeout','memory leak','performance issue'] },
+  creative: { label: 'Creative', icon: 'ti-sparkles', cls: 'cat-creative',
+    keywords: ['creative','brainstorm','idea','generate','design','ux','ui','mockup','wireframe','brand','slogan','tagline','name','story','narrative','concept','inspiration','innovative','visual','illustration','logo','color','layout','prototype'] },
+  planning: { label: 'Planning', icon: 'ti-calendar', cls: 'cat-planning',
+    keywords: ['plan','strategy','roadmap','timeline','milestone','goal','objective','okr','initiative','project plan','sprint','backlog','prioritize','scope','estimate','schedule','deadline','phase','quarter','half','launch plan','rollout','checklist','action item','decision','stakeholder','alignment'] },
+  data: { label: 'Data', icon: 'ti-database', cls: 'cat-data',
+    keywords: ['data','dataset','csv','json','excel','spreadsheet','chart','graph','visualization','transform','clean','parse','extract','aggregate','pivot','filter','sort','report','dashboard','tableau','looker','bigquery','sql','etl','pipeline','warehouse','model','predict','forecast','statistic','correlation','distribution','segment'] },
+  other: { label: 'Other', icon: 'ti-dots', cls: 'cat-other', keywords: [] }
+};
+
+let library = [];
+const STORAGE_KEY = 'claude_prompt_library_v2';
+
+function loadLibrary() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    library = raw ? JSON.parse(raw) : getSampleData();
+    if (!raw) saveLibrary();
+  } catch(e) { library = getSampleData(); }
+}
+
+function saveLibrary() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+}
+
+function getSampleData() {
+  return [
+    { id: genId(), title: 'Code review checklist', prompt: 'Review this pull request for correctness bugs, security issues, and performance problems. For each finding, explain the issue, show the affected code, and suggest a fix. Prioritize by severity.', category: 'code', author: 'Team', tags: ['code review','pr'], date: '2026-09-20' },
+    { id: genId(), title: 'Meeting notes to action items', prompt: 'Take these meeting notes and extract:\n1. Key decisions made\n2. Action items with owners and deadlines\n3. Open questions that need follow-up\n\nFormat as a clean summary I can paste into Slack.', category: 'writing', author: 'Team', tags: ['meetings','productivity'], date: '2026-09-18' },
+    { id: genId(), title: 'Incident postmortem draft', prompt: 'Help me write an incident postmortem for this outage. Include: timeline of events, root cause analysis, impact assessment, and concrete action items to prevent recurrence. Be specific and avoid vague language.', category: 'planning', author: 'Team', tags: ['incidents','postmortem'], date: '2026-09-15' },
+    { id: genId(), title: 'Data anomaly investigation', prompt: 'Analyze this dataset and identify any anomalies, outliers, or unexpected patterns. For each anomaly found, explain what makes it unusual, possible causes, and whether it needs investigation. Show your reasoning.', category: 'data', author: 'Team', tags: ['data quality','analysis'], date: '2026-09-12' },
+  ];
+}
+
+function genId() { return 'p_' + Math.random().toString(36).slice(2, 10); }
+
+function classifyPrompt(text) {
+  const lower = text.toLowerCase();
+  let scores = {};
+  for (const [cat, info] of Object.entries(CATEGORIES)) {
+    if (cat === 'other') continue;
+    let score = 0;
+    for (const kw of info.keywords) {
+      if (lower.includes(kw)) score += kw.includes(' ') ? 3 : 1;
+    }
+    scores[cat] = score;
+  }
+  const best = Object.entries(scores).sort((a,b) => b[1] - a[1])[0];
+  return best[1] > 0 ? best[0] : 'other';
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function formatDate(d) {
+  try {
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch(e) { return d; }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = '<i class="ti ti-check" style="font-size: 16px;" aria-hidden="true"></i>' + esc(msg);
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function renderStats() {
+  const counts = {};
+  for (const cat of Object.keys(CATEGORIES)) counts[cat] = 0;
+  library.forEach(p => counts[p.category] = (counts[p.category] || 0) + 1);
+  const top = Object.entries(counts).filter(([,v]) => v > 0).sort((a,b) => b[1] - a[1]);
+
+  document.getElementById('totalCount').textContent = library.length + ' prompt' + (library.length !== 1 ? 's' : '');
+
+  document.getElementById('statsRow').innerHTML =
+    '<div class="stat-card"><div class="stat-label">Total prompts</div><div class="stat-value">' + library.length + '</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Categories used</div><div class="stat-value">' + Object.values(counts).filter(v => v > 0).length + '</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Contributors</div><div class="stat-value">' + new Set(library.map(p => p.author)).size + '</div></div>' +
+    (top.length > 0 ? '<div class="stat-card"><div class="stat-label">Top category</div><div class="stat-value" style="font-size: 18px;">' + CATEGORIES[top[0][0]].label + '</div></div>' : '');
+}
+
+function renderChips() {
+  const cats = [...new Set(library.map(p => p.category))].sort();
+  const el = document.getElementById('filterChips');
+  el.innerHTML = '<button class="chip active" data-cat="all">All</button>' +
+    cats.map(c => '<button class="chip" data-cat="' + c + '">' + CATEGORIES[c].label + '</button>').join('');
+  el.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', function() {
+    el.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    renderGrid();
+  }));
+}
+
+function getActiveFilter() {
+  const a = document.querySelector('.chip.active');
+  return a ? a.dataset.cat : 'all';
+}
+
+function renderGrid() {
+  const filter = getActiveFilter();
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let items = library.filter(p => {
+    if (filter !== 'all' && p.category !== filter) return false;
+    if (search && !(p.title.toLowerCase().includes(search) || p.prompt.toLowerCase().includes(search) || (p.tags || []).some(t => t.toLowerCase().includes(search)) || p.author.toLowerCase().includes(search))) return false;
+    return true;
+  });
+
+  if (sort === 'newest') items.sort((a,b) => b.date.localeCompare(a.date));
+  else if (sort === 'oldest') items.sort((a,b) => a.date.localeCompare(b.date));
+  else items.sort((a,b) => a.title.localeCompare(b.title));
+
+  const grid = document.getElementById('promptGrid');
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="ti ti-book" aria-hidden="true"></i></div><p>' +
+      (search || filter !== 'all' ? 'No prompts match your filter.' : 'Your library is empty. Add your first prompt above.') + '</p></div>';
+    return;
+  }
+
+  grid.innerHTML = items.map(p => {
+    const cat = CATEGORIES[p.category] || CATEGORIES.other;
+    const needsExpand = p.prompt.length > 200;
+    return '<div class="prompt-card" data-id="' + p.id + '">' +
+      '<div class="card-top">' +
+        '<span class="card-title">' + esc(p.title) + '</span>' +
+        '<span class="card-cat ' + cat.cls + '"><i class="ti ' + cat.icon + '" style="font-size:12px;" aria-hidden="true"></i> ' + cat.label + '</span>' +
+      '</div>' +
+      '<div class="card-prompt' + (needsExpand ? '' : ' expanded') + '" data-pid="' + p.id + '">' + esc(p.prompt) + (needsExpand ? '<div class="fade"></div>' : '') + '</div>' +
+      '<div class="card-meta">' +
+        '<span><i class="ti ti-user" style="font-size: 14px; vertical-align: -1px; margin-right: 2px;" aria-hidden="true"></i>' + esc(p.author) + '</span>' +
+        '<span>' + formatDate(p.date) + '</span>' +
+        (p.tags || []).map(t => '<span class="tag">' + esc(t) + '</span>').join('') +
+        '<span class="card-actions">' +
+          '<button title="Copy prompt" onclick="copyPrompt(\'' + p.id + '\')"><i class="ti ti-copy" aria-hidden="true"></i></button>' +
+          '<button title="Delete" onclick="deletePrompt(\'' + p.id + '\')"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
+        '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  grid.querySelectorAll('.card-prompt:not(.expanded)').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function() { this.classList.add('expanded'); });
+  });
+}
+
+window.copyPrompt = function(id) {
+  const p = library.find(x => x.id === id);
+  if (p) navigator.clipboard.writeText(p.prompt).then(() => showToast('Copied to clipboard'));
+};
+
+window.deletePrompt = function(id) {
+  library = library.filter(x => x.id !== id);
+  saveLibrary();
+  renderAll();
+  showToast('Prompt removed');
+};
+
+function renderAll() { renderStats(); renderChips(); renderGrid(); }
+
+// Auto-detect category as user types
+document.getElementById('promptText').addEventListener('input', function() {
+  const val = this.value.trim();
+  const autoEl = document.getElementById('autoCategory');
+  const hintEl = document.getElementById('autoCatHint');
+  if (val.length < 10) { autoEl.style.display = 'none'; hintEl.style.display = 'inline'; return; }
+  const cat = classifyPrompt(val);
+  const info = CATEGORIES[cat];
+  autoEl.className = 'card-cat ' + info.cls;
+  autoEl.innerHTML = '<i class="ti ' + info.icon + '" style="font-size: 12px;" aria-hidden="true"></i> ' + info.label;
+  autoEl.style.display = 'inline-flex';
+  hintEl.style.display = 'none';
+});
+
+// Submit
+document.getElementById('submitBtn').addEventListener('click', function() {
+  const title = document.getElementById('promptTitle').value.trim();
+  const text = document.getElementById('promptText').value.trim();
+  const author = document.getElementById('promptAuthor').value.trim();
+  const tagsRaw = document.getElementById('promptTags').value.trim();
+  const errEl = document.getElementById('formError');
+
+  if (!title || !text) { errEl.textContent = 'Title and prompt are required.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  const category = classifyPrompt(text);
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  library.unshift({ id: genId(), title, prompt: text, category, author: author || 'Anonymous', tags, date: new Date().toISOString().split('T')[0] });
+  saveLibrary();
+  renderAll();
+  showToast('Added to ' + CATEGORIES[category].label);
+
+  document.getElementById('promptTitle').value = '';
+  document.getElementById('promptText').value = '';
+  document.getElementById('promptAuthor').value = '';
+  document.getElementById('promptTags').value = '';
+  document.getElementById('autoCategory').style.display = 'none';
+  document.getElementById('autoCatHint').style.display = 'inline';
+});
+
+// Clear
+document.getElementById('clearBtn').addEventListener('click', function() {
+  document.getElementById('promptTitle').value = '';
+  document.getElementById('promptText').value = '';
+  document.getElementById('promptAuthor').value = '';
+  document.getElementById('promptTags').value = '';
+  document.getElementById('autoCategory').style.display = 'none';
+  document.getElementById('autoCatHint').style.display = 'inline';
+  document.getElementById('formError').style.display = 'none';
+});
+
+// Export
+document.getElementById('exportBtn').addEventListener('click', function() {
+  const blob = new Blob([JSON.stringify(library, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'prompt-library-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Library exported');
+});
+
+// Import
+document.getElementById('importFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!Array.isArray(imported)) throw new Error('Not an array');
+      let added = 0;
+      const existingIds = new Set(library.map(p => p.id));
+      for (const p of imported) {
+        if (p.title && p.prompt && !existingIds.has(p.id)) {
+          library.unshift({ ...p, id: p.id || genId() });
+          added++;
+        }
+      }
+      saveLibrary();
+      renderAll();
+      showToast('Imported ' + added + ' prompt' + (added !== 1 ? 's' : ''));
+    } catch(err) { showToast('Invalid file format'); }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// Search and sort
+document.getElementById('searchInput').addEventListener('input', renderGrid);
+document.getElementById('sortSelect').addEventListener('change', renderGrid);
+
+loadLibrary();
+renderAll();
+</script>
+</body>
+</html>
