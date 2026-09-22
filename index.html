@@ -167,23 +167,15 @@ button:active { transform: scale(0.98); }
 .toast.show { display: flex; align-items: center; gap: 8px; animation: fadeInUp 0.3s; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-.cat-code { background: #E6F1FB; color: #0C447C; }
-.cat-writing { background: #EEEDFE; color: #3C3489; }
-.cat-analysis { background: #E1F5EE; color: #085041; }
-.cat-debug { background: #FCEBEB; color: #791F1F; }
-.cat-creative { background: #FBEAF0; color: #72243E; }
-.cat-planning { background: #FAEEDA; color: #633806; }
-.cat-data { background: #EAF3DE; color: #27500A; }
-.cat-other { background: #F1EFE8; color: #444441; }
+.cat-pricing { background: #EAF3DE; color: #27500A; }
+.cat-revenue { background: #E6F1FB; color: #0C447C; }
+.cat-new-resource { background: #EEEDFE; color: #3C3489; }
+.cat-data-analysis { background: #FAEEDA; color: #633806; }
 @media (prefers-color-scheme: dark) {
-  .cat-code { background: #0C447C; color: #B5D4F4; }
-  .cat-writing { background: #3C3489; color: #CECBF6; }
-  .cat-analysis { background: #085041; color: #9FE1CB; }
-  .cat-debug { background: #791F1F; color: #F7C1C1; }
-  .cat-creative { background: #72243E; color: #F4C0D1; }
-  .cat-planning { background: #633806; color: #FAC775; }
-  .cat-data { background: #27500A; color: #C0DD97; }
-  .cat-other { background: #444441; color: #D3D1C7; }
+  .cat-pricing { background: #27500A; color: #C0DD97; }
+  .cat-revenue { background: #0C447C; color: #B5D4F4; }
+  .cat-new-resource { background: #3C3489; color: #CECBF6; }
+  .cat-data-analysis { background: #633806; color: #FAC775; }
 }
 
 @media (max-width: 600px) {
@@ -201,9 +193,7 @@ button:active { transform: scale(0.98); }
     <h1>📚 Americas Yield Strategy Prompt Catalog</h1>
     <span class="count" id="totalCount"></span>
   </div>
-  <p class="lib-subtitle">✨ Collect and share useful Claude prompts across the team. Prompts are auto-categorized when you add them!</p>
-
-  <div class="stats-row" id="statsRow"></div>
+  <p class="lib-subtitle">✨ Collect and share useful Claude prompts across the team!</p>
 
   <div class="submit-section">
     <h2>🆕 Add a prompt</h2>
@@ -229,15 +219,14 @@ button:active { transform: scale(0.98); }
         </select>
       </div>
       <div class="form-row">
-        <label for="promptTags">🏷️ Tags (comma-separated)</label>
-        <input type="text" id="promptTags" placeholder="meeting, summary, notes" />
-      </div>
-    </div>
-    <div class="form-row">
-      <label>🤖 Auto-detected category</label>
-      <div class="auto-tag-row">
-        <span id="autoCategory" class="card-cat" style="display: none;"></span>
-        <span id="autoCatHint" class="auto-tag-hint">Start typing a prompt to auto-detect</span>
+        <label for="promptCategory">🗂️ Category</label>
+        <select id="promptCategory">
+          <option value="" disabled selected>Select a category</option>
+          <option value="pricing">💰 Pricing</option>
+          <option value="revenue">📈 Revenue</option>
+          <option value="new-resource">🆕 New Resource</option>
+          <option value="data-analysis">📊 Data Analysis</option>
+        </select>
       </div>
     </div>
     <div id="formError" class="form-error"></div>
@@ -269,21 +258,10 @@ button:active { transform: scale(0.98); }
 
 <script>
 const CATEGORIES = {
-  code: { label: '💻 Code', icon: 'ti-code', cls: 'cat-code',
-    keywords: ['code','function','api','debug','refactor','implement','build','deploy','test','unit test','integration','endpoint','class','method','module','import','export','typescript','javascript','python','react','sql','query','database','schema','migration','regex','algorithm','loop','array','object','variable','component','hook','route','middleware','sdk','cli','compile','lint','format','type','interface','enum','struct','git','commit','merge','branch','pull request','ci','cd','pipeline','docker','kubernetes','aws','terraform','server','client','backend','frontend','rest','graphql','websocket','authentication','authorization','jwt','oauth','css','html','dom','node','package','dependency','npm','yarn','webpack','vite'] },
-  writing: { label: '✍️ Writing', icon: 'ti-pencil', cls: 'cat-writing',
-    keywords: ['write','draft','email','blog','article','copy','tone','rewrite','edit','proofread','grammar','summary','summarize','memo','letter','message','newsletter','announcement','documentation','readme','proposal','report','essay','paragraph','sentence','outline','brief','comms','communication','stakeholder update','slack message','presentation'] },
-  analysis: { label: '🔍 Analysis', icon: 'ti-chart-bar', cls: 'cat-analysis',
-    keywords: ['analyze','analysis','compare','evaluate','assess','review','audit','insight','trend','pattern','metric','kpi','benchmark','research','investigate','pros and cons','tradeoff','trade-off','impact','risk','opportunity','swot','framework','breakdown','deep dive'] },
-  debug: { label: '🐛 Debugging', icon: 'ti-bug', cls: 'cat-debug',
-    keywords: ['debug','error','bug','fix','issue','problem','broken','crash','fail','exception','stack trace','log','troubleshoot','diagnose','root cause','regression','not working','undefined','null','timeout','memory leak','performance issue'] },
-  creative: { label: '🎨 Creative', icon: 'ti-sparkles', cls: 'cat-creative',
-    keywords: ['creative','brainstorm','idea','generate','design','ux','ui','mockup','wireframe','brand','slogan','tagline','name','story','narrative','concept','inspiration','innovative','visual','illustration','logo','color','layout','prototype'] },
-  planning: { label: '📋 Planning', icon: 'ti-calendar', cls: 'cat-planning',
-    keywords: ['plan','strategy','roadmap','timeline','milestone','goal','objective','okr','initiative','project plan','sprint','backlog','prioritize','scope','estimate','schedule','deadline','phase','quarter','half','launch plan','rollout','checklist','action item','decision','stakeholder','alignment'] },
-  data: { label: '📊 Data', icon: 'ti-database', cls: 'cat-data',
-    keywords: ['data','dataset','csv','json','excel','spreadsheet','chart','graph','visualization','transform','clean','parse','extract','aggregate','pivot','filter','sort','report','dashboard','tableau','looker','bigquery','sql','etl','pipeline','warehouse','model','predict','forecast','statistic','correlation','distribution','segment'] },
-  other: { label: '📦 Other', icon: 'ti-dots', cls: 'cat-other', keywords: [] }
+  pricing: { label: '💰 Pricing', cls: 'cat-pricing' },
+  revenue: { label: '📈 Revenue', cls: 'cat-revenue' },
+  'new-resource': { label: '🆕 New Resource', cls: 'cat-new-resource' },
+  'data-analysis': { label: '📊 Data Analysis', cls: 'cat-data-analysis' }
 };
 
 let library = [];
@@ -303,29 +281,14 @@ function saveLibrary() {
 
 function getSampleData() {
   return [
-    { id: genId(), title: 'Code review checklist', prompt: 'Review this pull request for correctness bugs, security issues, and performance problems. For each finding, explain the issue, show the affected code, and suggest a fix. Prioritize by severity.', category: 'code', author: 'Team', tags: ['code review','pr'], date: '2026-09-20' },
-    { id: genId(), title: 'Meeting notes to action items', prompt: 'Take these meeting notes and extract:\n1. Key decisions made\n2. Action items with owners and deadlines\n3. Open questions that need follow-up\n\nFormat as a clean summary I can paste into Slack.', category: 'writing', author: 'Team', tags: ['meetings','productivity'], date: '2026-09-18' },
-    { id: genId(), title: 'Incident postmortem draft', prompt: 'Help me write an incident postmortem for this outage. Include: timeline of events, root cause analysis, impact assessment, and concrete action items to prevent recurrence. Be specific and avoid vague language.', category: 'planning', author: 'Team', tags: ['incidents','postmortem'], date: '2026-09-15' },
-    { id: genId(), title: 'Data anomaly investigation', prompt: 'Analyze this dataset and identify any anomalies, outliers, or unexpected patterns. For each anomaly found, explain what makes it unusual, possible causes, and whether it needs investigation. Show your reasoning.', category: 'data', author: 'Team', tags: ['data quality','analysis'], date: '2026-09-12' },
+    { id: genId(), title: 'CPM floor analysis', prompt: 'Analyze the current CPM floor pricing for our top 10 markets. Compare against competitor benchmarks and identify opportunities to adjust floors without impacting fill rate. Show the revenue impact of a 5%, 10%, and 15% increase.', category: 'pricing', author: 'Ari Stanton', date: '2026-09-20' },
+    { id: genId(), title: 'Quarterly revenue forecast', prompt: 'Using the attached revenue data, build a quarterly forecast for the next 2 quarters. Factor in seasonality, market trends, and any known campaign commitments. Break down by product line and highlight risks to hitting target.', category: 'revenue', author: 'Jon Kitchell', date: '2026-09-18' },
+    { id: genId(), title: 'New market onboarding template', prompt: 'Create a comprehensive onboarding checklist for launching ad sales in a new LATAM market. Include: regulatory requirements, local partnerships needed, pricing strategy considerations, and a 90-day ramp plan.', category: 'new-resource', author: 'Leandro Tonce', date: '2026-09-15' },
+    { id: genId(), title: 'Campaign performance deep dive', prompt: 'Analyze this campaign performance dataset and identify: top performing segments, underperforming placements, audience overlap issues, and frequency capping recommendations. Provide actionable next steps for optimization.', category: 'data-analysis', author: 'Hirsh Sisodia', date: '2026-09-12' },
   ];
 }
 
 function genId() { return 'p_' + Math.random().toString(36).slice(2, 10); }
-
-function classifyPrompt(text) {
-  const lower = text.toLowerCase();
-  let scores = {};
-  for (const [cat, info] of Object.entries(CATEGORIES)) {
-    if (cat === 'other') continue;
-    let score = 0;
-    for (const kw of info.keywords) {
-      if (lower.includes(kw)) score += kw.includes(' ') ? 3 : 1;
-    }
-    scores[cat] = score;
-  }
-  const best = Object.entries(scores).sort((a,b) => b[1] - a[1])[0];
-  return best[1] > 0 ? best[0] : 'other';
-}
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -344,19 +307,8 @@ function showToast(msg) {
   t._timer = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-function renderStats() {
-  const counts = {};
-  for (const cat of Object.keys(CATEGORIES)) counts[cat] = 0;
-  library.forEach(p => counts[p.category] = (counts[p.category] || 0) + 1);
-  const top = Object.entries(counts).filter(([,v]) => v > 0).sort((a,b) => b[1] - a[1]);
-
+function updateCount() {
   document.getElementById('totalCount').textContent = library.length + ' prompt' + (library.length !== 1 ? 's' : '');
-
-  document.getElementById('statsRow').innerHTML =
-    '<div class="stat-card"><div class="stat-label">📚 Total prompts</div><div class="stat-value">' + library.length + '</div></div>' +
-    '<div class="stat-card"><div class="stat-label">🗂️ Categories used</div><div class="stat-value">' + Object.values(counts).filter(v => v > 0).length + '</div></div>' +
-    '<div class="stat-card"><div class="stat-label">👥 Contributors</div><div class="stat-value">' + new Set(library.map(p => p.author)).size + '</div></div>' +
-    (top.length > 0 ? '<div class="stat-card"><div class="stat-label">🏆 Top category</div><div class="stat-value" style="font-size: 18px;">' + CATEGORIES[top[0][0]].label + '</div></div>' : '');
 }
 
 function renderChips() {
@@ -383,7 +335,7 @@ function renderGrid() {
 
   let items = library.filter(p => {
     if (filter !== 'all' && p.category !== filter) return false;
-    if (search && !(p.title.toLowerCase().includes(search) || p.prompt.toLowerCase().includes(search) || (p.tags || []).some(t => t.toLowerCase().includes(search)) || p.author.toLowerCase().includes(search))) return false;
+    if (search && !(p.title.toLowerCase().includes(search) || p.prompt.toLowerCase().includes(search) || p.author.toLowerCase().includes(search))) return false;
     return true;
   });
 
@@ -410,7 +362,6 @@ function renderGrid() {
       '<div class="card-meta">' +
         '<span><i class="ti ti-user" style="font-size: 14px; vertical-align: -1px; margin-right: 2px;" aria-hidden="true"></i>' + esc(p.author) + '</span>' +
         '<span>' + formatDate(p.date) + '</span>' +
-        (p.tags || []).map(t => '<span class="tag">' + esc(t) + '</span>').join('') +
         '<span class="card-actions">' +
           '<button title="Copy prompt" onclick="copyPrompt(\'' + p.id + '\')"><i class="ti ti-copy" aria-hidden="true"></i></button>' +
           '<button title="Delete" onclick="deletePrompt(\'' + p.id + '\')"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
@@ -437,37 +388,20 @@ window.deletePrompt = function(id) {
   showToast('🗑️ Prompt removed');
 };
 
-function renderAll() { renderStats(); renderChips(); renderGrid(); }
-
-// Auto-detect category as user types
-document.getElementById('promptText').addEventListener('input', function() {
-  const val = this.value.trim();
-  const autoEl = document.getElementById('autoCategory');
-  const hintEl = document.getElementById('autoCatHint');
-  if (val.length < 10) { autoEl.style.display = 'none'; hintEl.style.display = 'inline'; return; }
-  const cat = classifyPrompt(val);
-  const info = CATEGORIES[cat];
-  autoEl.className = 'card-cat ' + info.cls;
-  autoEl.innerHTML = info.label;
-  autoEl.style.display = 'inline-flex';
-  hintEl.style.display = 'none';
-});
+function renderAll() { updateCount(); renderChips(); renderGrid(); }
 
 // Submit
 document.getElementById('submitBtn').addEventListener('click', function() {
   const title = document.getElementById('promptTitle').value.trim();
   const text = document.getElementById('promptText').value.trim();
   const author = document.getElementById('promptAuthor').value;
-  const tagsRaw = document.getElementById('promptTags').value.trim();
+  const category = document.getElementById('promptCategory').value;
   const errEl = document.getElementById('formError');
 
-  if (!title || !text) { errEl.textContent = 'Title and prompt are required.'; errEl.style.display = 'block'; return; }
+  if (!title || !text || !category) { errEl.textContent = 'Title, prompt, and category are required.'; errEl.style.display = 'block'; return; }
   errEl.style.display = 'none';
 
-  const category = classifyPrompt(text);
-  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
-
-  library.unshift({ id: genId(), title, prompt: text, category, author: author || 'Anonymous', tags, date: new Date().toISOString().split('T')[0] });
+  library.unshift({ id: genId(), title, prompt: text, category, author: author || 'Anonymous', date: new Date().toISOString().split('T')[0] });
   saveLibrary();
   renderAll();
   showToast('🎉 Added to ' + CATEGORIES[category].label + '!');
@@ -475,9 +409,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   document.getElementById('promptTitle').value = '';
   document.getElementById('promptText').value = '';
   document.getElementById('promptAuthor').selectedIndex = 0;
-  document.getElementById('promptTags').value = '';
-  document.getElementById('autoCategory').style.display = 'none';
-  document.getElementById('autoCatHint').style.display = 'inline';
+  document.getElementById('promptCategory').selectedIndex = 0;
 });
 
 // Clear
@@ -485,9 +417,7 @@ document.getElementById('clearBtn').addEventListener('click', function() {
   document.getElementById('promptTitle').value = '';
   document.getElementById('promptText').value = '';
   document.getElementById('promptAuthor').selectedIndex = 0;
-  document.getElementById('promptTags').value = '';
-  document.getElementById('autoCategory').style.display = 'none';
-  document.getElementById('autoCatHint').style.display = 'inline';
+  document.getElementById('promptCategory').selectedIndex = 0;
   document.getElementById('formError').style.display = 'none';
 });
 
