@@ -115,7 +115,11 @@ button:active { transform: scale(0.98); }
 .chip:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .chip.active { background: var(--bg-accent); color: var(--text-accent); border-color: var(--border-accent); }
 
-.prompt-grid { display: grid; gap: 12px; }
+.prompt-grid { display: grid; gap: 28px; }
+.category-section { }
+.category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 0.5px solid var(--border); }
+.category-count { font-size: 13px; color: var(--text-muted); }
+.category-cards { display: grid; gap: 12px; }
 .prompt-card {
   background: var(--surface-2); border: 0.5px solid var(--border);
   border-radius: 12px; padding: 1.25rem; transition: border-color 0.15s, box-shadow 0.15s;
@@ -328,6 +332,25 @@ function getActiveFilter() {
   return a ? a.dataset.cat : 'all';
 }
 
+function renderCard(p) {
+  const cat = CATEGORIES[p.category] || { label: p.category, cls: '' };
+  const needsExpand = p.prompt.length > 200;
+  return '<div class="prompt-card" data-id="' + p.id + '">' +
+    '<div class="card-top">' +
+      '<span class="card-title">' + esc(p.title) + '</span>' +
+    '</div>' +
+    '<div class="card-prompt' + (needsExpand ? '' : ' expanded') + '" data-pid="' + p.id + '">' + esc(p.prompt) + (needsExpand ? '<div class="fade"></div>' : '') + '</div>' +
+    '<div class="card-meta">' +
+      '<span><i class="ti ti-user" style="font-size: 14px; vertical-align: -1px; margin-right: 2px;" aria-hidden="true"></i>' + esc(p.author) + '</span>' +
+      '<span>' + formatDate(p.date) + '</span>' +
+      '<span class="card-actions">' +
+        '<button title="Copy prompt" onclick="copyPrompt(\'' + p.id + '\')"><i class="ti ti-copy" aria-hidden="true"></i></button>' +
+        '<button title="Delete" onclick="deletePrompt(\'' + p.id + '\')"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
+      '</span>' +
+    '</div>' +
+  '</div>';
+}
+
 function renderGrid() {
   const filter = getActiveFilter();
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -350,25 +373,28 @@ function renderGrid() {
     return;
   }
 
-  grid.innerHTML = items.map(p => {
-    const cat = CATEGORIES[p.category] || CATEGORIES.other;
-    const needsExpand = p.prompt.length > 200;
-    return '<div class="prompt-card" data-id="' + p.id + '">' +
-      '<div class="card-top">' +
-        '<span class="card-title">' + esc(p.title) + '</span>' +
-        '<span class="card-cat ' + cat.cls + '">' + cat.label + '</span>' +
+  const catOrder = ['pricing', 'revenue', 'new-resource', 'data-analysis'];
+  const catsToShow = filter !== 'all' ? [filter] : catOrder.filter(c => items.some(p => p.category === c));
+
+  let html = '';
+  for (const catKey of catsToShow) {
+    const cat = CATEGORIES[catKey];
+    if (!cat) continue;
+    const catItems = items.filter(p => p.category === catKey);
+    if (catItems.length === 0) continue;
+
+    html += '<div class="category-section">' +
+      '<div class="category-header">' +
+        '<span class="card-cat ' + cat.cls + '" style="font-size: 13px; padding: 5px 14px;">' + cat.label + '</span>' +
+        '<span class="category-count">' + catItems.length + ' prompt' + (catItems.length !== 1 ? 's' : '') + '</span>' +
       '</div>' +
-      '<div class="card-prompt' + (needsExpand ? '' : ' expanded') + '" data-pid="' + p.id + '">' + esc(p.prompt) + (needsExpand ? '<div class="fade"></div>' : '') + '</div>' +
-      '<div class="card-meta">' +
-        '<span><i class="ti ti-user" style="font-size: 14px; vertical-align: -1px; margin-right: 2px;" aria-hidden="true"></i>' + esc(p.author) + '</span>' +
-        '<span>' + formatDate(p.date) + '</span>' +
-        '<span class="card-actions">' +
-          '<button title="Copy prompt" onclick="copyPrompt(\'' + p.id + '\')"><i class="ti ti-copy" aria-hidden="true"></i></button>' +
-          '<button title="Delete" onclick="deletePrompt(\'' + p.id + '\')"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
-        '</span>' +
+      '<div class="category-cards">' +
+        catItems.map(renderCard).join('') +
       '</div>' +
     '</div>';
-  }).join('');
+  }
+
+  grid.innerHTML = html;
 
   grid.querySelectorAll('.card-prompt:not(.expanded)').forEach(el => {
     el.style.cursor = 'pointer';
