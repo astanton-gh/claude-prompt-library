@@ -274,8 +274,14 @@ const STORAGE_KEY = 'claude_prompt_library_v2';
 function loadLibrary() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    library = raw ? JSON.parse(raw) : getSampleData();
-    if (!raw) saveLibrary();
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      library = parsed.filter(p => CATEGORIES[p.category]);
+      if (library.length !== parsed.length) saveLibrary();
+    } else {
+      library = getSampleData();
+      saveLibrary();
+    }
   } catch(e) { library = getSampleData(); }
 }
 
